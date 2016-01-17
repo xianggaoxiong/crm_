@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<MenuConfig>
+
+	<Displayers>
+		<Displayer name="DropDown"
+			type="net.sf.navigator.displayer.DropDownMenuDisplayer" />
+	</Displayers>
+
+	<Menus>
+	</Menus>
+
+</MenuConfig>

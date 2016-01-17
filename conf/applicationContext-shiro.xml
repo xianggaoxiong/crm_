@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+	default-lazy-init="true">
+	
+	<description>Shiro 安全配置</description>  
+
+	<!-- 自定义的 Realm -->
+	<bean id="realm" class="com.atuigu.crm.service.ShiroDbRealm">
+		<property name="userService" ref="userService"></property>
+	</bean>
+	
+	<!-- 用户授权信息 Cache, 采用 EhCache -->
+	<bean id="shiroEhCacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+		<property name="cacheManagerConfigFile" value="classpath:ehcache-shiro.xml"></property>
+	</bean>
+
+	<!-- 配置 SecurityManager -->
+	<bean id="securityManager" 
+		class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="realm" ref="realm"></property>
+		<property name="cacheManager" ref="shiroEhCacheManager"></property>
+	</bean>
+	
+	<!-- 配置保证 Shiro 内部 Bean 声明周期都得到执行的 Lifecycle Bean 后置处理器 -->
+	<bean id="lifecycleBeanPostProcessor" 
+		class="org.apache.shiro.spring.LifecycleBeanPostProcessor"></bean>
+	
+	<!-- AOP 式方法级权限检查 -->
+	<!-- 为了支持 Shiro 的注释, 按官方文档的要求 -->
+	<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" 
+		depends-on="lifecycleBeanPostProcessor">
+		<property name="proxyTargetClass" value="true"></property>
+	</bean>
+	
+	<bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager"></property>
+	</bean>
+	
+	<!-- Shiro Filter -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager"></property>
+		<property name="loginUrl" value="/login"></property>
+		<property name="successUrl" value="/success"></property>
+		<property name="filterChainDefinitions">
+			<value>
+				/login = authc
+				/logout = logout
+				/static/** = anon
+				
+				/role/** = roles[role]
+				/user/** = roles[user]
+				/chance/** = roles[chance]
+				/plan/** = roles[plan]
+				/dict/** = roles[dict]
+				/product/** = roles[product]
+				/storage/** = roles[storage]
+				/customer/** = roles[customer]
+				/contact/** = roles[customer]
+				
+				/** = user
+			</value>
+		</property>
+	</bean>
+
+</beans>

@@ -1,0 +1,86 @@
+﻿1. 客户流失管理
+
+1). Spring 整合 Quartz
+2). mybatis 调用存储过程
+
+3). CustomerDrain 实体类的带查询条件的分页
+4). 暂缓流失: 注意把流失的措施作为 CustomerDrain 的一个字段: delay. 多个流失措施使用 ` 符号进行分割.
+
+5). 确认流失: 把对应的 Customer 和 CustomerDrain 的 state 和 status 字段更新为 "流失". 同时更新 CustomerDrain 数据表的 reason 字段
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1. 删除用户, 创建用户, 授权:
+
+drop user atguigu2 cascade;
+
+create user atguigu2 identified by atguigu2;
+grant connect, resource, dba to atguigu2;
+
+2. 创建序列:
+
+CREATE SEQUENCE CRM_SEQ 
+INCREMENT BY 1
+START WITH 100
+
+3. 查询出 1 天(6 个月)以内没有下订单的客户 id, name, manager_id, order_date, 且每个客户只查询出距离当前最近的一个订单. 
+
+SELECT c.id, name, manager_id, o.order_date
+  from customers c
+  JOIN (SELECT customer_id, MAX(order_date) order_date
+          FROM orders
+          GROUP BY customer_id) o
+--from customers c JOIN orders o
+ON c.id = o.customer_id
+ WHERE o.order_date < sysdate - 1
+--WHERE o.order_date < add_months(sysdate, -6);
+
+4. 存储过程: 客户状态: 正常, 删除, 预警, 流失
+
+CREATE OR REPLACE PROCEDURE check_drain
+IS
+
+--声明游标
+CURSOR drain_cursor IS
+  SELECT c.id, name, manager_id, o.order_date
+  FROM customers c
+  JOIN (SELECT customer_id, MAX(order_date) order_date
+        FROM orders
+        GROUP BY customer_id) o
+  ON c.id = o.customer_id
+  WHERE o.order_date < SYSDATE - 5
+  --WHERE o.order_date < ADD_MONTHS(SYSDATE, -6)
+  AND c.state = '正常';
+
+BEGIN
+
+FOR drain_info IN drain_cursor LOOP
+    INSERT INTO customer_drains(id, customer_id, last_order_date, status) 
+    VALUES(CRM_SEQ.NEXTVAL, drain_info.id, drain_info.order_date, '流失预警');
+    
+    UPDATE customers SET state = '流失预警' WHERE id = drain_info.id;
+END LOOP;
+
+END;
