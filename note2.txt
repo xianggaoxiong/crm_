@@ -9,7 +9,7 @@
 5). 确认流失: 把对应的 Customer 和 CustomerDrain 的 state 和 status 字段更新为 "流失". 同时更新 CustomerDrain 数据表的 reason 字段
 
 向高熊 好好学习 天天向上
-
+相信我能行
 
 
 
