@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ehcache updateCheck="false" name="hibernateCache">
+
+	<diskStore path="java.io.tmpdir/ehcache/crm/hibernate" />
+
+	<!-- DefaultCache setting. -->
+	<defaultCache 
+		maxElementsInMemory="10000" 
+		eternal="false" 
+		timeToIdleSeconds="300" 
+		timeToLiveSeconds="600"
+		overflowToDisk="true" />
+	
+	<!--  
+	<cache 
+		name="com.atguigu.crm.entity.User" 
+		maxElementsInMemory="1000" 
+		eternal="true"
+		overflowToDisk="true" />
+	-->
+		
+</ehcache>
